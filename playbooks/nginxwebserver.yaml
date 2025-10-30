@@ -1,12 +1,30 @@
 ---
 - name: Set up Nginx web server and deploy a default web page
-  hosts: all  # Replace with your target group or host name
+  hosts: all
+  become: yes
+
   tasks:
-    - name: Install Nginx package
+    - name: Check if nginx is installed
+      command: nginx -v
+      register: nginx_check
+      ignore_errors: yes
+
+    - name: Install Nginx on Debian/Ubuntu (only if not installed)
       apt:
         name: nginx
         state: present
         update_cache: yes
+      when:
+        - ansible_facts['os_family'] == "Debian"
+        - nginx_check.rc != 0
+
+    - name: Install Nginx on RedHat/CentOS (only if not installed)
+      yum:
+        name: nginx
+        state: present
+      when:
+        - ansible_facts['os_family'] == "RedHat"
+        - nginx_check.rc != 0
 
     - name: Start and enable Nginx service
       systemd:
