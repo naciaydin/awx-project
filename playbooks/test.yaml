@@ -1,0 +1,31 @@
+---
+- name: debug nginx from awx
+  hosts: all
+  become: yes
+  gather_facts: no
+
+  tasks:
+    - name: whoami
+      command: whoami
+      register: who
+    - debug: var=who.stdout
+
+    - name: which systemctl
+      command: which systemctl
+      register: sysctl_path
+      ignore_errors: yes
+    - debug: var=sysctl_path.stdout
+
+    - name: systemctl status nginx
+      command: systemctl status nginx
+      register: nginx_status
+      ignore_errors: yes
+    - debug: var=nginx_status.stdout
+    - debug: var=nginx_status.stderr
+
+    - name: try start nginx
+      command: systemctl start nginx
+      register: start_out
+      ignore_errors: yes
+    - debug: var=start_out.stdout
+    - debug: var=start_out.stderr
