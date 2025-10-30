@@ -26,6 +26,16 @@
         - ansible_facts['os_family'] == "RedHat"
         - nginx_check.rc != 0
 
+    - name: Determine Nginx web root path based on OS
+      set_fact:
+        nginx_root: "{{ '/usr/share/nginx/html' if ansible_facts['os_family'] == 'RedHat' else '/var/www/html' }}"
+
+    - name: Ensure Nginx web root directory exists
+      file:
+        path: "{{ nginx_root }}"
+        state: directory
+        mode: '0755'
+
     - name: Start and enable Nginx service
       systemd:
         name: nginx
@@ -34,7 +44,7 @@
 
     - name: Create the default index.html page
       copy:
-        dest: /var/www/html/index.html
+        dest: "{{ nginx_root }}/index.html"
         content: |
           <html>
             <head><title>Welcome to Nginx!</title></head>
